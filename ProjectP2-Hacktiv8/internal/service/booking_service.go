@@ -53,10 +53,13 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 		}
 	}
 
+	fmt.Println(user)
+
 	downPayment := room.Price * 40 / 100
+
 	if(user.Balance < downPayment){
 		return http.StatusPaymentRequired, map[string]interface{}{
-			"status" : http.StatusInternalServerError,
+			"status" : http.StatusPaymentRequired,
 			"message": fmt.Sprintf("Booking create fail, insufficient balance"),
 		}
 	}

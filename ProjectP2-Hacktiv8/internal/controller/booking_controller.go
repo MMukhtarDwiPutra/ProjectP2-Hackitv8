@@ -49,7 +49,13 @@ func (h *bookingController) BookARoom(c echo.Context) error{
 		})
 	}
 
+	fmt.Println(bookingRequest)
+
 	status, webResponse := h.bookingService.BookARoom(bookingRequest)
+	// status := 200
+	// webResponse := map[string]string{
+	// 	"messsage": "testing",
+	// }
 
 	return c.JSON(status, webResponse)
 }

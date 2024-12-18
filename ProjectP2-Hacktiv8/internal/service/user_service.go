@@ -16,6 +16,7 @@ import(
 type UserService interface{
 	RegisterUser(request entity.RegisterRequest) (int, map[string]interface{})
 	LoginUser(request entity.LoginRequest) (int, map[string]interface{})
+	UserInfo(id int) (int, map[string]interface{})
 }
 
 type userService struct{
@@ -59,7 +60,7 @@ func (s *userService) RegisterUser(request entity.RegisterRequest) (int, map[str
 		}
 	}
 
-	userResponse := entity.RegisterResponse{
+	userResponse := entity.UserResponse{
 		UserID: userResult.UserID,
 		Email: request.Email,
 		FullName: request.FullName,
@@ -119,4 +120,30 @@ func (s *userService) LoginUser(request entity.LoginRequest) (int, map[string]in
 		"message": "Login successfuly",
 		"token": tokenString,
 	}
+}
+
+func (s *userService) UserInfo(id int) (int, map[string]interface{}){
+	user, err := s.userRepository.GetUserById(id)
+	if user == nil {
+		return http.StatusNotFound, map[string]interface{}{"message": "User not found"}
+	}
+	if err != nil {
+		return http.StatusInternalServerError, map[string]interface{}{
+			"status": http.StatusInternalServerError,
+			"message": "error query get user by email",
+		}
+	}
+
+	userResponse := entity.UserResponse{
+		UserID: user.UserID,
+		Email: user.Email,
+		FullName: user.FullName,
+		Balance: user.Balance,
+	}
+
+	return http.StatusOK, map[string]interface{}{
+			"status": http.StatusOK,
+			"message": "Successfully getting user info",
+			"data": userResponse,
+		}
 }

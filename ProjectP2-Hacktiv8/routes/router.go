@@ -45,6 +45,7 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 	// Route user
 	e.POST("/users/register", userController.RegisterUser)
 	e.POST("/users/login", userController.LoginUser)
+	e.GET("/users/info", userController.UserInfo, internal.Authentication)
 
 	e.POST("/users/topup", saldoController.TopUp, internal.Authentication)
 

@@ -51,7 +51,7 @@ func (r *userRepository) UpdateBalance(user entity.BalanceRequest) (*entity.Bala
 	// Increment the balance
 	if err := r.db.Model(&entity.User{}).
 		Where("user_id = ?", user.UserID).
-		Update("balance", gorm.Expr("balance + ?", user.Balance)).Error; err != nil {
+		Update("balance", gorm.Expr("?", user.Balance)).Error; err != nil {
 		return nil, err
 	}
 

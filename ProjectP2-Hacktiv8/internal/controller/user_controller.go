@@ -90,3 +90,18 @@ func (h *userController) LoginUser(c echo.Context) error {
 	// Mengembalikan respons dalam format JSON.
 	return c.JSON(status, webResponse)
 }
+
+
+func (h *userController) UserInfo(c echo.Context) error{
+	userID, ok := c.Get("user_id").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"status" : http.StatusUnauthorized,
+			"message": fmt.Sprintf("User ID is not valid!"),
+		})
+	}
+
+	status, webResponse := h.userService.UserInfo(userID)
+
+	return c.JSON(status, webResponse)
+}

@@ -16,11 +16,10 @@ type RegisterRequest struct{
 	Balance float32 `json:"balance"`
 }
 
-type RegisterResponse struct{
+type UserResponse struct{
 	UserID int `json:"user_id"`
 	FullName string `json:"full_name"`
 	Email string `json:"email"`
-	Username string `json:"username"`
 	Balance float32 `json:"balance"`
 }
 
