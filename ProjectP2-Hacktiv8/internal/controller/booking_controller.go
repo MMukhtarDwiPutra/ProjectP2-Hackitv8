@@ -53,3 +53,17 @@ func (h *bookingController) BookARoom(c echo.Context) error{
 
 	return c.JSON(status, webResponse)
 }
+
+func (h *bookingController) BookingReport(c echo.Context) error{
+	userID, ok := c.Get("user_id").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"status" : http.StatusUnauthorized,
+			"message": fmt.Sprintf("User ID is not valid!"),
+		})
+	}
+
+	status, webResponse := h.bookingService.BookingReport(userID)
+
+	return c.JSON(status, webResponse)	
+}

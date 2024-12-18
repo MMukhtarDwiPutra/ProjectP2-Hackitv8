@@ -7,6 +7,7 @@ import(
 
 type BookingRepository interface{
 	CreateBooking(booking entity.Booking) (*entity.Booking, error)
+	GetBookingByUserId(userID int) (*[]entity.Booking, error)
 }
 
 type bookingRepository struct{
@@ -24,4 +25,14 @@ func (r *bookingRepository) CreateBooking(booking entity.Booking) (*entity.Booki
 	}
 
 	return &booking, nil
+}
+
+func (r *bookingRepository) GetBookingByUserId(userID int) (*[]entity.Booking, error){
+	var bookingReport []entity.Booking
+
+	if err := r.db.Where("user_id = ?", userID).Find(&bookingReport).Error; err != nil{
+		return nil, err
+	}
+
+	return &bookingReport, nil
 }

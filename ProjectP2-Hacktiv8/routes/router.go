@@ -49,6 +49,7 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 	e.POST("/users/topup", saldoController.TopUp, internal.Authentication)
 
 	e.POST("/users/bookings", bookingController.BookARoom, internal.Authentication)
+	e.GET("/users/bookings", bookingController.BookingReport, internal.Authentication)
 
 	e.GET("/rooms", roomController.GetAllRooms)
 

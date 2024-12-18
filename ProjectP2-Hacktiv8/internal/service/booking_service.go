@@ -10,6 +10,7 @@ import(
 
 type BookingService interface{
 	BookARoom(bookingRequest entity.BookingRequest) (int, map[string]interface{})
+	BookingReport(userID int) (int, map[string]interface{})
 }
 
 type bookingService struct{
@@ -38,5 +39,21 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 		"status" : http.StatusCreated,
 		"message": "Booking created successfully",
 		"data" : bookingResp,
+	}
+}
+
+func (c *bookingService) BookingReport(userID int) (int, map[string]interface{}){
+	bookingReport, err := c.bookingRepository.GetBookingByUserId(userID)
+	if err != nil{
+		return http.StatusInternalServerError, map[string]interface{}{
+			"status" : http.StatusInternalServerError,
+			"message": fmt.Sprintf("Booking create fail: %v",err),
+		}
+	}
+
+	return http.StatusOK, map[string]interface{}{
+		"status" : http.StatusOK,
+		"message": "Getting booking report successfully",
+		"data" : bookingReport,
 	}
 }
