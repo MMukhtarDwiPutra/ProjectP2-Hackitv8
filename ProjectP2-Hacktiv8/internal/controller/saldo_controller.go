@@ -18,7 +18,7 @@ func NewSaldoController(saldoService service.SaldoService) *saldoController {
 }
 
 func (h *saldoController) TopUp(c echo.Context) error{
-	var topUpRequest entity.TopUpRequest
+	var topUpRequest entity.BalanceRequest
 
 	userID, ok := c.Get("user_id").(int)
 	if !ok {

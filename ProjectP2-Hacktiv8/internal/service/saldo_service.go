@@ -14,7 +14,7 @@ import(
 )
 
 type SaldoService interface{
-	TopUp(topUpRequest entity.TopUpRequest) (int, map[string]interface{})
+	TopUp(topUpRequest entity.BalanceRequest) (int, map[string]interface{})
 }
 
 type saldoService struct{
@@ -25,7 +25,7 @@ func NewSaldoService(saldoRepository repository.UserRepository) *saldoService{
 	return &saldoService{saldoRepository}
 }
 
-func (s *saldoService) TopUp(topUpRequest entity.TopUpRequest) (int, map[string]interface{}){
+func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[string]interface{}){
 	user, err := s.userRepository.UpdateBalance(topUpRequest)
 	if err != nil{
 		return http.StatusInternalServerError, map[string]interface{}{

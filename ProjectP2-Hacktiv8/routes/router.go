@@ -24,7 +24,7 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 
 	// Inisialisasi service
 	userService := service.NewUserService(userRepository)
-	bookingService := service.NewBookingService(bookingRepository)
+	bookingService := service.NewBookingService(bookingRepository, userRepository, roomRepository)
 	roomService := service.NewRoomService(roomRepository)
 	saldoService := service.NewSaldoService(userRepository)
 

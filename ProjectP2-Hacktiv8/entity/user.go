@@ -29,12 +29,12 @@ type LoginRequest struct{
 	Password string `json:"password" validate:"required"`
 }
 
-type TopUpRequest struct{
+type BalanceRequest struct{
 	UserID int `json:"user_id" validate:"required"`
 	Balance float32 `json:"top_up_balance" validate:"required"`
 }
 
-type TopUpResponse struct{
+type BalanceResponse struct{
 	UserID int `json:"user_id"`
 	FullName string `json:"full_name"`
 	Balance float32 `json:"balance"`

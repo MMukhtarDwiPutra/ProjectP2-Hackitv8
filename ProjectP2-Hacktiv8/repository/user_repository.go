@@ -8,7 +8,8 @@ import(
 type UserRepository interface{
 	CreateUser(user entity.User) (*entity.User, error)
 	GetUserByEmail(email string) (*entity.User, error)
-	UpdateBalance(user entity.TopUpRequest) (*entity.TopUpResponse, error)
+	GetUserById(id int) (*entity.User, error)
+	UpdateBalance(user entity.BalanceRequest) (*entity.BalanceResponse, error)
 }
 
 type userRepository struct{
@@ -37,7 +38,16 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error){
 	return &user, nil
 }
 
-func (r *userRepository) UpdateBalance(user entity.TopUpRequest) (*entity.TopUpResponse, error){
+func (r *userRepository) GetUserById(id int) (*entity.User, error){
+	var user entity.User
+	if err := r.db.Where("user_id = ?", id).First(&user).Error; err != nil{
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) UpdateBalance(user entity.BalanceRequest) (*entity.BalanceResponse, error){
 	// Increment the balance
 	if err := r.db.Model(&entity.User{}).
 		Where("user_id = ?", user.UserID).
@@ -52,7 +62,7 @@ func (r *userRepository) UpdateBalance(user entity.TopUpRequest) (*entity.TopUpR
 		return nil, err
 	}
 
-	userResp := entity.TopUpResponse{
+	userResp := entity.BalanceResponse{
 		UserID: updatedUser.UserID,
 		FullName: updatedUser.FullName,
 		Balance: updatedUser.Balance,

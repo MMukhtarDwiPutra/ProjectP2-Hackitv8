@@ -7,6 +7,7 @@ import(
 
 type RoomRepository interface{
 	GetAllRooms() (*[]entity.Room, error)
+	GetRoomById(id int) (*entity.Room, error)
 }
 
 type roomRepository struct{
@@ -24,4 +25,13 @@ func (r *roomRepository) GetAllRooms() (*[]entity.Room, error){
 	}
 
 	return &rooms, nil
+}
+
+func (r *roomRepository) GetRoomById(id int) (*entity.Room, error){
+	var room entity.Room
+	if err := r.db.Where("room_id = ?", id).Find(&room).Error; err != nil{
+		return nil, err
+	}
+
+	return &room, nil
 }
