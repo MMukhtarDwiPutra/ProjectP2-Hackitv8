@@ -5,9 +5,17 @@ import(
 	"P2-Hacktiv8/routes"
 	// _ "P2-Hacktiv8/docs" // Import the generated Swagger docs
 	"os"
+	"github.com/joho/godotenv"
+	"log"
 )
 
 func main(){
+	// Load the .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	db := config.InitDatabase()
 
 	router := routes.NewRouter(db)

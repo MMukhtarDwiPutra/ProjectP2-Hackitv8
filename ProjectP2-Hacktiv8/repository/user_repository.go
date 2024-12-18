@@ -8,6 +8,7 @@ import(
 type UserRepository interface{
 	CreateUser(user entity.User) (*entity.User, error)
 	GetUserByEmail(email string) (*entity.User, error)
+	UpdateBalance(user entity.TopUpRequest) (*entity.TopUpResponse, error)
 }
 
 type userRepository struct{
@@ -36,3 +37,26 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error){
 	return &user, nil
 }
 
+func (r *userRepository) UpdateBalance(user entity.TopUpRequest) (*entity.TopUpResponse, error){
+	// Increment the balance
+	if err := r.db.Model(&entity.User{}).
+		Where("user_id = ?", user.UserID).
+		Update("balance", gorm.Expr("balance + ?", user.Balance)).Error; err != nil {
+		return nil, err
+	}
+
+	// Retrieve the updated user
+	var updatedUser entity.User
+
+	if err := r.db.Where("user_id = ?", user.UserID).First(&updatedUser).Error; err != nil {
+		return nil, err
+	}
+
+	userResp := entity.TopUpResponse{
+		UserID: updatedUser.UserID,
+		FullName: updatedUser.FullName,
+		Balance: updatedUser.Balance,
+	}
+
+	return &userResp, nil
+}

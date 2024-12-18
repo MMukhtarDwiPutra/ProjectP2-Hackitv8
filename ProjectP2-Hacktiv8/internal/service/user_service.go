@@ -10,6 +10,7 @@ import(
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
 	"fmt"
+	"P2-Hacktiv8/utils"
 )
 
 type UserService interface{
@@ -46,9 +47,8 @@ func (s *userService) RegisterUser(request entity.RegisterRequest) (int, map[str
 	user := entity.User{
 		Email: request.Email,
 		FullName: request.FullName,
-		Username: request.Username,
 		Password: string(hashedPassword),
-		Age: request.Age,
+		Balance: 0,
 	}
 
 	userResult, err := s.userRepository.CreateUser(user);
@@ -60,14 +60,20 @@ func (s *userService) RegisterUser(request entity.RegisterRequest) (int, map[str
 	}
 
 	userResponse := entity.RegisterResponse{
-		ID: userResult.ID,
+		UserID: userResult.UserID,
 		Email: request.Email,
 		FullName: request.FullName,
-		Username: request.Username,
-		Age: request.Age,
+		Balance: 0,
 	}
 
+	to := request.Email
+	subject := "Register P2-Hacktiv8 Successfully"
+	content := "Your register in our website is success!"
+	utils.SendEmailNotification(to, subject, content)
+
 	return http.StatusCreated, map[string]interface{}{
+		"status": http.StatusCreated,
+		"message": "User response created successfully",
 		"data": userResponse,
 	}
 }
@@ -79,27 +85,38 @@ func (s *userService) LoginUser(request entity.LoginRequest) (int, map[string]in
 		return http.StatusNotFound, map[string]interface{}{"message": "Invalid Email or Password"}
 	}
 	if err != nil {
-		return http.StatusInternalServerError, map[string]interface{}{"message": "error query."}
+		return http.StatusInternalServerError, map[string]interface{}{
+			"status": http.StatusInternalServerError,
+			"message": "error query get user by email",
+		}
 	}
 
 	// Memverifikasi password siswa
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
-		return http.StatusNotFound, map[string]interface{}{"message": "Invalid Email or Password"}
+		return http.StatusNotFound, map[string]interface{}{
+			"status": http.StatusNotFound,
+			"message": "Invalid Email or Password",
+		}
 	}
 
 	// Membuat token JWT untuk siswa yang berhasil login
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID,
+		"user_id": user.UserID,
 		"exp":        time.Now().Add(time.Hour * 72).Unix(),
 	})
 
 	// Menandatangani token dengan secret key
 	tokenString, err := token.SignedString([]byte(middleware.SecretKey))
 	if err != nil {
-		return http.StatusInternalServerError, map[string]interface{}{"message": "internal server error"}
+		return http.StatusInternalServerError, map[string]interface{}{
+			"status": http.StatusInternalServerError,
+			"message": "error signed jwt token",
+		}
 	}
 
 	return http.StatusOK, map[string]interface{}{
+		"status": http.StatusOK,
+		"message": "Login successfuly",
 		"token": tokenString,
 	}
 }

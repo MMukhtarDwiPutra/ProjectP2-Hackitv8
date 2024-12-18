@@ -2,7 +2,7 @@ package routes
 
 import(
 	"P2-Hacktiv8/internal/controller"
-	// internal "P2-Hacktiv8/internal/middleware"
+	internal "P2-Hacktiv8/internal/middleware"
 	"P2-Hacktiv8/internal/service"
 	"P2-Hacktiv8/repository"
 	// _ "P2-Hacktiv8/docs" // Import the generated Swagger docs
@@ -19,12 +19,20 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 	// cfg := LoadConfig()
 
 	userRepository := repository.NewUserRepository(db)
+	bookingRepository := repository.NewBookingRepository(db)
+	roomRepository := repository.NewRoomRepository(db)
 
 	// Inisialisasi service
 	userService := service.NewUserService(userRepository)
+	bookingService := service.NewBookingService(bookingRepository)
+	roomService := service.NewRoomService(roomRepository)
+	saldoService := service.NewSaldoService(userRepository)
 
 	// Inisialisasi controller
 	userController := controller.NewUserController(userService)
+	bookingController := controller.NewBookingController(bookingService)
+	roomController := controller.NewRoomController(roomService)
+	saldoController := controller.NewSaldoController(saldoService)
 
 	// Membuat instance baru dari Echo
 	e := echo.New()
@@ -37,6 +45,12 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 	// Route user
 	e.POST("/users/register", userController.RegisterUser)
 	e.POST("/users/login", userController.LoginUser)
+
+	e.POST("/users/topup", saldoController.TopUp, internal.Authentication)
+
+	e.POST("/users/bookings", bookingController.BookARoom, internal.Authentication)
+
+	e.GET("/rooms", roomController.GetAllRooms)
 
 
 	// Mengembalikan instance Echo yang sudah dikonfigurasi

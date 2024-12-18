@@ -6,17 +6,18 @@ import (
 	
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"os"
 )
 
 // InitDB menginisialisasi koneksi ke database PostgreSQL menggunakan GORM.
 // Koneksi dibuat menggunakan konfigurasi yang sudah ditentukan, baik untuk lingkungan lokal maupun Supabase.
 func InitDatabase() *gorm.DB {
 	// // Konfigurasi untuk koneksi ke database
-	db_host := "localhost"
-	db_user := "postgres"
-	db_password := "12345678"
-	db_name := "GC3P2"
-	db_port := "5432"
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
 
 	// Konfigurasi untuk Supabase
 	// db_host := "aws-0-ap-southeast-1.pooler.supabase.com"
@@ -28,11 +29,11 @@ func InitDatabase() *gorm.DB {
 	// Membuat DSN (Data Source Name) untuk koneksi ke PostgreSQL
 	// Format: "host=<host> user=<user> password=<password> dbname=<dbname> port=<port> sslmode=disable TimeZone=Asia/Shanghai"
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
-		db_host,
-		db_user,
-		db_password,
-		db_name,
-		db_port,
+		dbHost,
+		dbUser,
+		dbPassword,
+		dbName,
+		dbPort,
 	)
 
 	// Membuka koneksi ke database menggunakan GORM

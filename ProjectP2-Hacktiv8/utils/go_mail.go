@@ -2,20 +2,22 @@ package utils
 
 import(
 	"gopkg.in/gomail.v2"
+	"os"
+	"log"
 )
 
-func SendEmailNotification(from, to, subject, content string){
-	m := gomail.NewMessage()
-	m.SetHeader("From", "your-email@example.com")
-	m.SetHeader("To", "recipient@example.com")
-	m.SetHeader("Subject", "Test Email Notification")
-	m.SetBody("text/plain", "This is a test email sent using Gomail.")
+func SendEmailNotification(to, subject, content string){
+	from := os.Getenv("3RD_PARTY_EMAIL")
+	password := os.Getenv("3RD_PARTY_EMAIL_PASSWORD")
 
-	// Attach a file (optional)
-	// m.Attach("/path/to/file")
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", content)
 
 	// Set up the SMTP server
-	d := gomail.NewDialer("smtp.example.com", 587, "your-email@example.com", "your-password")
+	d := gomail.NewDialer("smtp.gmail.com", 587, from, password)
 
 	// Send the email
 	if err := d.DialAndSend(m); err != nil {

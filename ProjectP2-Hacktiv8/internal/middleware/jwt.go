@@ -62,11 +62,6 @@ func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
 				c.Set("user_id", int(userID)) // Mengonversi ke int sebelum menyimpannya.
 			}
 
-			// Menyimpan ID mahasiswa (student_id) ke dalam context untuk digunakan di endpoint berikutnya.
-			if customerID, ok := claims["customer_id"].(float64); ok {
-				c.Set("customer_id", int(customerID)) // Mengonversi ke int sebelum menyimpannya.
-			}
-
 			// Melanjutkan ke handler berikutnya jika token valid.
 			return next(c)
 		}
