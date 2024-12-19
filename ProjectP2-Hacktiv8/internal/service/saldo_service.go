@@ -5,6 +5,7 @@ import(
 	"P2-Hacktiv8/repository"
 	"net/http"
 	"fmt"
+	"gorm.io/gorm"
 )
 
 type SaldoService interface{
@@ -19,28 +20,40 @@ func NewSaldoService(saldoRepository repository.UserRepository) *saldoService{
 	return &saldoService{saldoRepository}
 }
 
-func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[string]interface{}){
+func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[string]interface{}) {
+	// Get the user from the repository
 	findUser, err := s.userRepository.GetUserById(topUpRequest.UserID)
-	if err != nil{
+	if err != nil {
+		// Handle user not found error
+		if err == gorm.ErrRecordNotFound {
+			return http.StatusNotFound, map[string]interface{}{
+				"status":  http.StatusNotFound,
+				"message": "User not found",
+			}
+		}
+		// Handle internal server error for other errors
 		return http.StatusInternalServerError, map[string]interface{}{
-			"status" : http.StatusInternalServerError,
-			"message": fmt.Sprintf("Top up fail in database: %v",err),
+			"status":  http.StatusInternalServerError,
+			"message": fmt.Sprintf("Top up fail in database: %v", err),
 		}
 	}
 
+	// Add the top-up balance to the user's balance
 	topUpRequest.Balance += findUser.Balance
 
+	// Update the balance in the repository
 	user, err := s.userRepository.UpdateBalance(topUpRequest)
-	if err != nil{
+	if err != nil {
 		return http.StatusInternalServerError, map[string]interface{}{
-			"status" : http.StatusInternalServerError,
-			"message": fmt.Sprintf("Top up fail in database: %v",err),
+			"status":  http.StatusInternalServerError,
+			"message": fmt.Sprintf("Top up fail in database: %v", err),
 		}
 	}
 
+	// Return success response with the updated user data
 	return http.StatusOK, map[string]interface{}{
-		"status" : http.StatusOK,
+		"status":  http.StatusOK,
 		"message": "Successfully top up balance",
-		"data": user,
+		"data":    user,
 	}
 }

@@ -21,7 +21,7 @@ func NewRoomService(roomRepository repository.RoomRepository) *roomService{
 func (s *roomService) GetAllRooms() (int, map[string]interface{}){
 	rooms, err := s.roomRepository.GetAllRooms()
 	if err != nil{
-		return http.StatusCreated, map[string]interface{}{
+		return http.StatusInternalServerError, map[string]interface{}{
 			"status" : http.StatusInternalServerError,
 			"message": fmt.Sprintf("Getting all rooms fail: %v",err),
 		}

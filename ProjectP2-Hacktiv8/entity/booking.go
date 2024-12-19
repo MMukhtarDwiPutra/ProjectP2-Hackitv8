@@ -4,9 +4,13 @@ type Booking struct{
 	BookingID int `gorm:"primaryKey;" json:"booking_id"`
 	UserID int `json:"user_id"`
 	RoomID int `json:"room_id"`
+	DateIn string `json:"date_in"`
+	DateOut string `json:"date_out"`
 }
 
 type BookingRequest struct{
 	UserID int `json:"user_id"`
-	RoomID int `json:"room_id" validate:"required""`
+	RoomID int `json:"room_id" validate:"required"`
+	DateIn string `json:"date_in" validate:"required"`
+	DateOut string `json:"date_out" validate:"required"`
 }

@@ -3,7 +3,6 @@ package controller
 import (
 	"P2-Hacktiv8/internal/service"
 	"github.com/labstack/echo/v4" // Import Echo framework untuk pengelolaan HTTP API.
-	"net/http"
 )
 
 // roomController is the controller for room-related operations.
