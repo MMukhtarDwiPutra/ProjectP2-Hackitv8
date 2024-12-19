@@ -4,18 +4,17 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"os"
 
 	"github.com/golang-jwt/jwt/v4"       // Paket JWT untuk pengelolaan token.
 	"github.com/labstack/echo/v4"        // Framework Echo untuk pengelolaan API HTTP.
 )
 
-// SecretKey adalah kunci rahasia yang digunakan untuk memverifikasi token JWT.
-// Ganti "SecretKey" dengan kunci yang lebih aman di lingkungan produksi.
-var SecretKey = "SecretKey"
-
 // Authentication adalah middleware untuk memeriksa token JWT di setiap permintaan.
 // Middleware ini memastikan bahwa pengguna yang mengakses endpoint memiliki token yang valid.
 func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
+	SecretKey := os.Getenv("LOGIN_SECRET_KEY")
+
 	return func(c echo.Context) error {
 		// Mendapatkan token dari header Authorization.
 		authHeader := c.Request().Header.Get("Authorization")

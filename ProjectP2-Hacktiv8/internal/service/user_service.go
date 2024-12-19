@@ -3,7 +3,6 @@ package service
 import(
 	"P2-Hacktiv8/entity"
 	"P2-Hacktiv8/repository"
-	middleware "P2-Hacktiv8/internal/middleware"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
@@ -11,12 +10,14 @@ import(
 	"gorm.io/gorm"
 	"fmt"
 	"P2-Hacktiv8/utils"
+	"os"
 )
 
 type UserService interface{
 	RegisterUser(request entity.RegisterRequest) (int, map[string]interface{})
 	LoginUser(request entity.LoginRequest) (int, map[string]interface{})
 	UserInfo(id int) (int, map[string]interface{})
+	ConfirmHandler(tokenString string) (int, map[string]interface{})
 }
 
 type userService struct{
@@ -28,6 +29,9 @@ func NewUserService(userRepository repository.UserRepository) *userService{
 }
 
 func (s *userService) RegisterUser(request entity.RegisterRequest) (int, map[string]interface{}){
+	secretKey := os.Getenv("REGIST_SECRET_KEY")
+	appUrl := os.Getenv("APP_URL")
+
 	findUser, err := s.userRepository.GetUserByEmail(request.Email)
 	if findUser != nil {
 		return http.StatusConflict, map[string]interface{}{"message": "Tidak berhasil! Email sudah terdaftar!"}
@@ -45,11 +49,21 @@ func (s *userService) RegisterUser(request entity.RegisterRequest) (int, map[str
 		}
 	}
 
+	// Membuat token JWT untuk siswa yang berhasil login
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": request.Email,
+		"exp":        time.Now().Add(time.Hour * 72).Unix(),
+	})
+	// Menandatangani token dengan secret key
+	tokenString, err := token.SignedString([]byte(secretKey))
+
 	user := entity.User{
 		Email: request.Email,
 		FullName: request.FullName,
 		Password: string(hashedPassword),
 		Balance: 0,
+		JwtToken: tokenString,
+		IsActivated: "NOT YET",
 	}
 
 	userResult, err := s.userRepository.CreateUser(user);
@@ -67,9 +81,11 @@ func (s *userService) RegisterUser(request entity.RegisterRequest) (int, map[str
 		Balance: 0,
 	}
 
+	confirmationLink := fmt.Sprintf("%v/confirm?token=%s", appUrl, tokenString)
+
 	to := request.Email
 	subject := "Register P2-Hacktiv8 Successfully"
-	content := "Your register in our website is success!"
+	content := fmt.Sprintf("Your register in our website is success! Please use this link %v to activate your account!", confirmationLink)
 	utils.SendEmailNotification(to, subject, content)
 
 	return http.StatusCreated, map[string]interface{}{
@@ -80,6 +96,8 @@ func (s *userService) RegisterUser(request entity.RegisterRequest) (int, map[str
 }
 
 func (s *userService) LoginUser(request entity.LoginRequest) (int, map[string]interface{}){
+	secretKey := os.Getenv("LOGIN_SECRET_KEY")
+
 	// Mengecek apakah email siswa ada di database
 	user, err := s.userRepository.GetUserByEmail(request.Email)
 	if user == nil {
@@ -107,7 +125,7 @@ func (s *userService) LoginUser(request entity.LoginRequest) (int, map[string]in
 	})
 
 	// Menandatangani token dengan secret key
-	tokenString, err := token.SignedString([]byte(middleware.SecretKey))
+	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status": http.StatusInternalServerError,
@@ -142,8 +160,47 @@ func (s *userService) UserInfo(id int) (int, map[string]interface{}){
 	}
 
 	return http.StatusOK, map[string]interface{}{
-			"status": http.StatusOK,
-			"message": "Successfully getting user info",
-			"data": userResponse,
+		"status": http.StatusOK,
+		"message": "Successfully getting user info",
+		"data": userResponse,
+	}
+}
+
+func (s *userService) ConfirmHandler(tokenString string) (int, map[string]interface{}){
+	if tokenString == "" {
+		return http.StatusBadRequest, map[string]interface{}{
+			"status": http.StatusBadRequest,
+			"message": "Token is missing",
 		}
+	}
+
+	user, err := utils.ParseRegisTokenString(tokenString)
+	if err != nil{
+		return http.StatusUnauthorized, map[string]interface{}{
+			"status": http.StatusUnauthorized,
+			"message": fmt.Sprintf("Invalid token: %v", err),
+		}
+	}
+
+	findUser, err := s.userRepository.GetUserByEmail(user["email"])
+	if findUser != nil{
+		if(findUser.IsActivated == "Activated"){
+			return http.StatusOK, map[string]interface{}{
+				"status": http.StatusOK,
+				"message": "Your account has been activated before! You can use your account!",
+			}
+		}
+
+		s.userRepository.UpdateIsActivatedById(findUser.UserID, "Activated")
+		return http.StatusOK, map[string]interface{}{
+			"status": http.StatusOK,
+			"message": "Activated account successfuly",
+		}
+	}
+
+	// Mengembalikan respons Unauthorized jika klaim dalam token tidak valid.
+	return http.StatusUnauthorized, map[string]interface{}{
+		"status": http.StatusUnauthorized,
+		"message": fmt.Sprintf("Invalid token claims"),
+	}
 }

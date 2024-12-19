@@ -4,11 +4,11 @@ import (
 	"P2-Hacktiv8/entity"
 	"P2-Hacktiv8/internal/service"
 	"fmt"
-	// "github.com/go-playground/validator/v10" // Validator untuk memvalidasi request body.
-	"github.com/labstack/echo/v4"            // Import Echo framework untuk pengelolaan HTTP API.
+	"github.com/labstack/echo/v4" // Import Echo framework untuk pengelolaan HTTP API.
 	"net/http"
 )
 
+// bookingController handles booking-related operations.
 type bookingController struct {
 	bookingService service.BookingService
 }
@@ -18,7 +18,20 @@ func NewBookingController(bookingService service.BookingService) *bookingControl
 	return &bookingController{bookingService}
 }
 
-func (h *bookingController) BookARoom(c echo.Context) error{
+// BookARoom godoc
+// @Summary Book a room
+// @Description Books a room for a user, requiring down payment based on the room price and user's balance.
+// @Tags Booking
+// @Accept json
+// @Produce json
+// @Param request body entity.BookingRequest true "Booking Request"
+// @Success 201 {object} map[string]interface{} "Booking created successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request parameters"
+// @Failure 404 {object} map[string]interface{} "Room or User not found"
+// @Failure 402 {object} map[string]interface{} "Insufficient balance"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /booking [post]
+func (h *bookingController) BookARoom(c echo.Context) error {
 	var bookingRequest entity.BookingRequest
 
 	userID, ok := c.Get("user_id").(int)
@@ -29,38 +42,41 @@ func (h *bookingController) BookARoom(c echo.Context) error{
 		})
 	}
 
-	// Melakukan bind request body ke struct.
+	// Bind request body to struct.
 	if err := c.Bind(&bookingRequest); err != nil {
-		// Mengembalikan respons jika request body tidak valid.
+		// Return response if request body is invalid.
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"status" : http.StatusInternalServerError,
-			"message": fmt.Sprintf("Booking create fail: %v",err),
+			"message": fmt.Sprintf("Booking create fail: %v", err),
 		})
 	}
 
 	bookingRequest.UserID = userID
-	// Memvalidasi data request menggunakan validator.
+	// Validate the request data using validator.
 	err := validate.Struct(bookingRequest)
 	if err != nil {
-		// Mengembalikan respons jika validasi gagal.
+		// Return response if validation fails.
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status" : http.StatusBadRequest,
-			"message": fmt.Sprintf("Need: %v",err),
+			"message": fmt.Sprintf("Need: %v", err),
 		})
 	}
 
-	fmt.Println(bookingRequest)
-
 	status, webResponse := h.bookingService.BookARoom(bookingRequest)
-	// status := 200
-	// webResponse := map[string]string{
-	// 	"messsage": "testing",
-	// }
 
 	return c.JSON(status, webResponse)
 }
 
-func (h *bookingController) BookingReport(c echo.Context) error{
+// BookingReport godoc
+// @Summary Get booking report for a user
+// @Description Retrieves all bookings made by a specific user.
+// @Tags Booking
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Booking report retrieved successfully"
+// @Failure 401 {object} map[string]interface{} "User not authorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /booking/report [get]
+func (h *bookingController) BookingReport(c echo.Context) error {
 	userID, ok := c.Get("user_id").(int)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
@@ -71,5 +87,5 @@ func (h *bookingController) BookingReport(c echo.Context) error{
 
 	status, webResponse := h.bookingService.BookingReport(userID)
 
-	return c.JSON(status, webResponse)	
+	return c.JSON(status, webResponse)
 }

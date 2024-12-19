@@ -10,6 +10,8 @@ type UserRepository interface{
 	GetUserByEmail(email string) (*entity.User, error)
 	GetUserById(id int) (*entity.User, error)
 	UpdateBalance(user entity.BalanceRequest) (*entity.BalanceResponse, error)
+	UpdateIsActivatedById(id int, isActivated string) (*entity.User, error)
+	GetUserByEmailAndToken(email, token string) (*entity.User, error)
 }
 
 type userRepository struct{
@@ -69,4 +71,30 @@ func (r *userRepository) UpdateBalance(user entity.BalanceRequest) (*entity.Bala
 	}
 
 	return &userResp, nil
+}
+
+func (r *userRepository) UpdateIsActivatedById(id int, isActivated string) (*entity.User, error){
+	if err := r.db.Model(&entity.User{}).
+		Where("user_id = ?", id).
+		Update("is_activated", gorm.Expr("?", isActivated)).Error; err != nil {
+		return nil, err
+	}
+
+	// Retrieve the updated user
+	var updatedUser entity.User
+
+	if err := r.db.Where("user_id = ?", id).First(&updatedUser).Error; err != nil {
+		return nil, err
+	}
+
+	return &updatedUser, nil
+}
+
+func (r *userRepository) GetUserByEmailAndToken(email, token string) (*entity.User, error){
+	var user entity.User
+	if err := r.db.Where("email = ? and token = ?", email, token).First(&user).Error; err != nil{
+		return nil, err
+	}
+
+	return &user, nil
 }

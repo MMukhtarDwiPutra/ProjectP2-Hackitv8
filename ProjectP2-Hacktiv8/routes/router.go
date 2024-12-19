@@ -43,6 +43,8 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Route user
+	e.GET("/confirm", userController.ConfirmHandler)
+
 	e.POST("/users/register", userController.RegisterUser)
 	e.POST("/users/login", userController.LoginUser)
 	e.GET("/users/info", userController.UserInfo, internal.Authentication)

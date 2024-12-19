@@ -6,7 +6,8 @@ type User struct{
 	Email string `gorm:"unique" json:"email"`
 	Password string `json:"password"`
 	Balance float32 `json:"balance"`
-	
+	JwtToken string `json:"jwt_token"`
+	IsActivated string `json:"is_activated"`
 }
 
 type RegisterRequest struct{

@@ -1,14 +1,12 @@
 package controller
 
 import (
-	// "P2-Hacktiv8/entity"
 	"P2-Hacktiv8/internal/service"
-	// "fmt"
-	// "github.com/go-playground/validator/v10" // Validator untuk memvalidasi request body.
-	"github.com/labstack/echo/v4"            // Import Echo framework untuk pengelolaan HTTP API.
-	// "net/http"
+	"github.com/labstack/echo/v4" // Import Echo framework untuk pengelolaan HTTP API.
+	"net/http"
 )
 
+// roomController is the controller for room-related operations.
 type roomController struct {
 	roomService service.RoomService
 }
@@ -18,7 +16,15 @@ func NewRoomController(roomService service.RoomService) *roomController {
 	return &roomController{roomService}
 }
 
-func (h *roomController) GetAllRooms(c echo.Context) error{
+// GetAllRooms godoc
+// @Summary Get all rooms
+// @Description Retrieves a list of all available rooms.
+// @Tags Room
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Successfully fetched all rooms"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /rooms [get]
+func (h *roomController) GetAllRooms(c echo.Context) error {
 	status, webResponse := h.roomService.GetAllRooms()
 
 	return c.JSON(status, webResponse)

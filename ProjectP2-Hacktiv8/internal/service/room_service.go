@@ -1,10 +1,8 @@
 package service
 
 import(
-	// "P2-Hacktiv8/entity"
 	"P2-Hacktiv8/repository"
 	"net/http"
-	// "gorm.io/gorm"
 	"fmt"
 )
 

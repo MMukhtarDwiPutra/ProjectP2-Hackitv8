@@ -3,14 +3,8 @@ package service
 import(
 	"P2-Hacktiv8/entity"
 	"P2-Hacktiv8/repository"
-	// middleware "P2-Hacktiv8/internal/middleware"
-	// "golang.org/x/crypto/bcrypt"
 	"net/http"
-	// "time"
-	// "github.com/golang-jwt/jwt/v4"
-	// // "gorm.io/gorm"
 	"fmt"
-	// "P2-Hacktiv8/utils"
 )
 
 type SaldoService interface{
