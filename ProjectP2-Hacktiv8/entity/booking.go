@@ -14,3 +14,8 @@ type BookingRequest struct{
 	DateIn string `json:"date_in" validate:"required"`
 	DateOut string `json:"date_out" validate:"required"`
 }
+
+type Invoice struct {
+	ID         string `json:"id"`
+	InvoiceUrl string `json:"invoice_url"`
+}

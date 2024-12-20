@@ -77,6 +77,7 @@ func (h *userController) LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid request parameters"})
 	}
 
+
 	// Memvalidasi data request menggunakan validator.
 	err := validate.Struct(loginRequest)
 	if err != nil {

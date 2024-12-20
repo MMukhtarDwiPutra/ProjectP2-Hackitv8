@@ -2,98 +2,162 @@ package entity
 
 import "time"
 
-type InvoiceWebhookPayload struct {
-    ID                     string  `json:"id"`
-    ExternalID             string  `json:"external_id"`
-    UserID                 string  `json:"user_id"`
-    IsHigh                 bool    `json:"is_high"`
-    PaymentMethod          string  `json:"payment_method"`
-    Status                 string  `json:"status"`
-    MerchantName           string  `json:"merchant_name"`
-    Amount                 int     `json:"amount"`
-    PaidAmount             int     `json:"paid_amount"`
-    BankCode               string  `json:"bank_code"`
-    PaidAt                 string  `json:"paid_at"`
-    PayerEmail             string  `json:"payer_email"`
-    Description            string  `json:"description"`
-    AdjustedReceivedAmount int     `json:"adjusted_received_amount"`
-    FeesPaidAmount         int     `json:"fees_paid_amount"`
+type XenditPaymentResponse struct {
+	ID             string                   `json:"id"`
+	Currency       string                   `json:"currency"`
+	Amount         int                      `json:"amount"`
+	CustomerID     string                   `json:"customer_id"`
+	BusinessID     string                   `json:"business_id"`
+	Status         string                   `json:"status"`
+	PaymentMethod  PaymentMethod            `json:"payment_method"`
+	ChannelProperties ChannelProperties     `json:"channel_properties"`
+	Actions        []Action                 `json:"actions"`
+	Created        string                   `json:"created"`
+	Updated        string                   `json:"updated"`
+	Metadata       map[string]interface{}   `json:"metadata"`
 }
 
-type PaymentResponse struct {
-	BusinessID      string `json:"business_id"`      // ID of the business
-	IsLivemode      bool   `json:"is_livemode"`      // Indicates if the mode is live
-	ChannelCode     string `json:"channel_code"`     // Code for the payment channel
-	Name            string `json:"name"`            // Name of the payment method
-	Currency        string `json:"currency"`        // Currency used for the payment
-	ChannelCategory string `json:"channel_category"`// Category of the payment channel
-	IsEnabled       bool   `json:"is_enabled"`      // Indicates if the payment method is enabled
+// type PaymentMethod struct {
+// 	ID             string                   `json:"id"`
+// 	Type           string                   `json:"type"`
+// 	Reusability    string                   `json:"reusability"`
+// 	Status         string                   `json:"status"`
+// 	EWallet        EWallet                  `json:"ewallet"`
+// 	DirectDebit    interface{}              `json:"direct_debit"`
+// }
+
+type EWallet struct {
+	ChannelCode       string               `json:"channel_code"`
+	ChannelProperties EWalletChannelProperties `json:"channel_properties"`
+	Account           EWalletAccount       `json:"account"`
 }
 
-type WebhookEvent struct {
-	Event      string    `json:"event"`
-	Data       EventData `json:"data"`
-	Created    time.Time `json:"created"`
-	BusinessID string    `json:"business_id"`
-	APIVersion *string   `json:"api_version"`
+type EWalletChannelProperties struct {
+	SuccessReturnURL string               `json:"success_return_url"`
 }
 
-type EventData struct {
-	ID                string        `json:"id"`
-	Amount            int           `json:"amount"`
-	Status            string        `json:"status"`
-	Country           string        `json:"country"`
-	Created           time.Time     `json:"created"`
-	Updated           time.Time     `json:"updated"`
-	Currency          string        `json:"currency"`
-	Metadata          Metadata      `json:"metadata"`
-	CustomerID        string        `json:"customer_id"`
-	ReferenceID       string        `json:"reference_id"`
-	PaymentMethod     PaymentMethod `json:"payment_method"`
-	Description       *string       `json:"description"`
-	FailureCode       *string       `json:"failure_code"`
-	PaymentDetail     *string       `json:"payment_detail"`
-	ChannelProperties *string       `json:"channel_properties"`
-	PaymentRequestID  string        `json:"payment_request_id"`
+type EWalletAccount struct {
+	AccountDetails interface{}            `json:"account_details"`
+	Name           interface{}            `json:"name"`
+	Balance        interface{}            `json:"balance"`
+	PointBalance   interface{}            `json:"point_balance"`
 }
 
-type Metadata struct {
-	SKU string `json:"sku"`
+// type ChannelProperties struct {
+// 	RedeemPoints string                  `json:"redeem_points"`
+// }
+
+type Action struct {
+	Action   string                      `json:"action"`
+	URLType  string                      `json:"url_type"`
+	URL      string                      `json:"url"`
+	Method   string                      `json:"method"`
+}
+
+type PaymentMethodsResponse struct {
+	Data    []PaymentMethod `json:"data"`
+	HasMore bool            `json:"has_more"`
 }
 
 type PaymentMethod struct {
-	ID                  string         `json:"id"`
-	Card                *string        `json:"card"`
-	Type                string         `json:"type"`
-	Status              string         `json:"status"`
-	Created             time.Time      `json:"created"`
-	EWallet             *string        `json:"ewallet"`
-	QRCode              *string        `json:"qr_code"`
-	Updated             time.Time      `json:"updated"`
-	Metadata            *string        `json:"metadata"`
-	Description         *string        `json:"description"`
-	Reusability         string         `json:"reusability"`
-	DirectDebit         DirectDebit    `json:"direct_debit"`
-	ReferenceID         string         `json:"reference_id"`
-	VirtualAccount      *string        `json:"virtual_account"`
-	OverTheCounter      *string        `json:"over_the_counter"`
-	DirectBankTransfer  *string        `json:"direct_bank_transfer"`
+	ID                  string              `json:"id"`
+	Card                interface{}         `json:"card"`
+	Type                string              `json:"type"`
+	Status              string              `json:"status"`
+	Actions             []interface{}       `json:"actions"`
+	Country             string              `json:"country"`
+	Created             string              `json:"created"`
+	EWallet             interface{}         `json:"ewallet"`
+	QRCode              interface{}         `json:"qr_code"`
+	Updated             string              `json:"updated"`
+	Metadata            interface{}         `json:"metadata"`
+	CustomerID          string              `json:"customer_id"`
+	Description         interface{}         `json:"description"`
+	Reusability         string              `json:"reusability"`
+	DirectDebit         *DirectDebit        `json:"direct_debit"`
+	FailureCode         interface{}         `json:"failure_code"`
+	ReferenceID         string              `json:"reference_id"`
+	VirtualAccount      interface{}         `json:"virtual_account"`
+	OverTheCounter      interface{}         `json:"over_the_counter"`
+	BillingInformation  interface{}         `json:"billing_information"`
+	DirectBankTransfer  interface{}         `json:"direct_bank_transfer"`
+	BusinessID          string              `json:"business_id"`
 }
 
 type DirectDebit struct {
-	Type           string          `json:"type"`
-	DebitCard      *string         `json:"debit_card"`
-	BankAccount    BankAccount     `json:"bank_account"`
-	ChannelCode    string          `json:"channel_code"`
-	ChannelProps   ChannelProps    `json:"channel_properties"`
+	Type            string            `json:"type"`
+	DebitCard       *DebitCard        `json:"debit_card"`
+	BankAccount     interface{}       `json:"bank_account"`
+	ChannelCode     string            `json:"channel_code"`
+	ChannelProperties ChannelProperties `json:"channel_properties"`
 }
 
-type BankAccount struct {
-	BankAccountHash           string `json:"bank_account_hash"`
-	MaskedBankAccountNumber   string `json:"masked_bank_account_number"`
+type DebitCard struct {
+	MobileNumber  string `json:"mobile_number"`
+	CardLastFour  string `json:"card_last_four"`
+	CardExpiry    string `json:"card_expiry"`
+	Email         string `json:"email"`
 }
 
-type ChannelProps struct {
-	FailureReturnURL string `json:"failure_return_url"`
-	SuccessReturnURL string `json:"success_return_url"`
+type ChannelProperties struct {
+	RedeemPoints string                  `json:"redeem_points"`
+	MobileNumber  string `json:"mobile_number"`
+	CardLastFour  string `json:"card_last_four"`
+	CardExpiry    string `json:"card_expiry"`
+	Email         string `json:"email"`
+	SuccessRedirectURL string `json:"success_redirect_url"`
+}
+
+type PaymentRequest struct {
+	ReferenceID     string            `json:"reference_id"`
+	Currency        string            `json:"currency"`
+	Amount          int               `json:"amount"`
+	CheckoutMethod  string            `json:"checkout_method"`
+	ChannelCode     string            `json:"channel_code"`
+	ChannelProperties ChannelProperties `json:"channel_properties"`
+	Metadata        Metadata          `json:"metadata"`
+}
+
+type Metadata struct {
+	BranchArea string `json:"branch_area"`
+	BranchCity string `json:"branch_city"`
+	BranchCode string `json:"branch_code"`
+}
+
+type Actions struct {
+	DesktopWebCheckoutURL  *string `json:"desktop_web_checkout_url"`
+	MobileWebCheckoutURL   *string `json:"mobile_web_checkout_url"`
+	MobileDeeplinkCheckoutURL string `json:"mobile_deeplink_checkout_url"`
+	QrCheckoutString       string `json:"qr_checkout_string"`
+}
+
+type ChargeResponse struct {
+	ID                  string            `json:"id"`
+	BusinessID          string            `json:"business_id"`
+	ReferenceID         string            `json:"reference_id"`
+	Status              string            `json:"status"`
+	Currency            string            `json:"currency"`
+	ChargeAmount        int               `json:"charge_amount"`
+	CaptureAmount       int               `json:"capture_amount"`
+	RefundedAmount      *int              `json:"refunded_amount"`
+	CheckoutMethod      string            `json:"checkout_method"`
+	ChannelCode         string            `json:"channel_code"`
+	ChannelProperties   ChannelProperties `json:"channel_properties"`
+	Actions             Actions           `json:"actions"`
+	IsRedirectRequired  bool              `json:"is_redirect_required"`
+	CallbackURL         string            `json:"callback_url"`
+	Created             time.Time         `json:"created"`
+	Updated             time.Time         `json:"updated"`
+	VoidStatus          *string           `json:"void_status"`
+	VoidedAt            *time.Time        `json:"voided_at"`
+	CaptureNow          bool              `json:"capture_now"`
+	CustomerID          *string           `json:"customer_id"`
+	PaymentMethodID     *string           `json:"payment_method_id"`
+	FailureCode         *string           `json:"failure_code"`
+	Basket              *string           `json:"basket"`
+	Metadata            Metadata          `json:"metadata"`
+}
+
+func main() {
+	// Example usage of the ChargeResponseRequest struct
 }

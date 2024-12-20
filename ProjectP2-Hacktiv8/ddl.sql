@@ -23,6 +23,8 @@ CREATE TABLE bookings (
     user_id INT NOT NULL,                               -- Foreign key to users
     room_id INT NOT NULL,                               -- Foreign key to rooms
     booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,   -- Timestamp of booking
+    date_in DATE NOT NULL,
+    date_out DATE NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE CASCADE
 );

@@ -3,10 +3,12 @@ package service
 import(
 	"P2-Hacktiv8/entity"
 	"P2-Hacktiv8/repository"
+	"P2-Hacktiv8/utils"
 	"net/http"
 	"gorm.io/gorm"
 	"errors"
 	"fmt"
+	"time"
 )
 
 type BookingService interface{
@@ -25,6 +27,20 @@ func NewBookingService(bookingRepository repository.BookingRepository, userRepos
 }
 
 func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, map[string]interface{}) {
+	if bookingRequest.DateIn == "" || bookingRequest.DateOut == "" {
+	    return http.StatusBadRequest, map[string]interface{}{"message": "date_in and date_out cannot be empty"}
+	}
+
+	dateIn, err := time.Parse("2006-01-02", bookingRequest.DateIn)
+	if err != nil {
+	    return http.StatusBadRequest, map[string]interface{}{"message": "Invalid format for date_in"}
+	}
+
+	dateOut, err := time.Parse("2006-01-02", bookingRequest.DateOut)
+	if err != nil {
+	    return http.StatusBadRequest, map[string]interface{}{"message": "Invalid format for date_out"}
+	}
+
 	// Attempt to retrieve the room first
 	room, err := c.roomRepository.GetRoomById(bookingRequest.RoomID)
 
@@ -57,9 +73,7 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 		}
 	}
 
-	// Validate user balance
-	downPayment := room.Price * 40 / 100
-	if user.Balance < downPayment {
+	if user.Balance < room.Price {
 		return http.StatusPaymentRequired, map[string]interface{}{
 			"status":  http.StatusPaymentRequired,
 			"message": "Booking creation failed: insufficient balance.",
@@ -70,6 +84,8 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 	booking := entity.Booking{
 		UserID: bookingRequest.UserID,
 		RoomID: bookingRequest.RoomID,
+		DateIn: dateIn.Format("2006-01-02"),
+		DateOut: dateOut.Format("2006-01-02"),
 	}
 	bookingResp, err := c.bookingRepository.CreateBooking(booking)
 	if err != nil {
@@ -80,7 +96,7 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 	}
 	
 	// Deduct balance
-	user.Balance -= downPayment
+	user.Balance -= room.Price
 	newUserBalance := entity.BalanceRequest{
 		UserID:  user.UserID,
 		Balance: user.Balance,
@@ -92,6 +108,29 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 			"message": fmt.Sprintf("Booking creation failed: %v", err),
 		}
 	}
+
+	// Send email notification
+	to := user.Email
+	subject := fmt.Sprintf("Booking Room %v Successfully", room.RoomID)
+
+	// Format the content to include detailed booking information
+	content := fmt.Sprintf(`
+	Dear %s,
+
+	Thank you for booking with us! Here are the details of your booking:
+
+	- Room ID: %v
+	- Price: $%.2f
+	- Booking Date: %v
+
+	We hope you enjoy your stay. If you have any questions or need further assistance, feel free to contact us.
+
+	Best regards,
+	Your Booking Team
+	`, user.FullName, room.RoomID, room.Price, time.Now().Format("January 2, 2006, 3:04 PM"))
+
+	// Send the email
+	utils.SendEmailNotification(to, subject, content)
 
 	return http.StatusCreated, map[string]interface{}{
 		"status":  http.StatusCreated,

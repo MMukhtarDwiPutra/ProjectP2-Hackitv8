@@ -47,7 +47,7 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 	e.GET("/payments", saldoController.GetAllPaymentsMethod)
 
 	e.POST("/users/register", userController.RegisterUser)
-	e.POST("/users/login", userController.LoginUser)
+	e.POST("/users/login", userController.LoginUser, internal.CheckUserActivationByEmail(userRepository))
 	e.GET("/users/info", userController.UserInfo, internal.Authentication)
 
 	e.POST("/users/topup", saldoController.TopUp, internal.Authentication)

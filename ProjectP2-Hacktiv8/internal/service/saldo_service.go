@@ -3,6 +3,7 @@ package service
 import(
 	"P2-Hacktiv8/entity"
 	"P2-Hacktiv8/repository"
+	"P2-Hacktiv8/utils"
 	"net/http"
 	"fmt"
 	"gorm.io/gorm"
@@ -41,8 +42,16 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 	// Add the top-up balance to the user's balance
 	topUpRequest.Balance += findUser.Balance
 
+	invoice, err := utils.CreateInvoice(*findUser, topUpRequest)
+	if err != nil {
+		return http.StatusInternalServerError, map[string]interface{}{
+			"status":  http.StatusInternalServerError,
+			"message": fmt.Sprintf("Top up fail in database: %v", err),
+		}
+	}
+
 	// Update the balance in the repository
-	user, err := s.userRepository.UpdateBalance(topUpRequest)
+	_, err = s.userRepository.UpdateBalance(topUpRequest)
 	if err != nil {
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status":  http.StatusInternalServerError,
@@ -54,6 +63,6 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 	return http.StatusOK, map[string]interface{}{
 		"status":  http.StatusOK,
 		"message": "Successfully top up balance",
-		"data":    user,
+		"data":    invoice,
 	}
 }
