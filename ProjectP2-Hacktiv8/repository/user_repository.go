@@ -12,6 +12,10 @@ type UserRepository interface{
 	UpdateBalance(user entity.BalanceRequest) (*entity.BalanceResponse, error)
 	UpdateIsActivatedById(id int, isActivated string) (*entity.User, error)
 	GetUserByEmailAndToken(email, token string) (*entity.User, error)
+	CreateXenditHistory(xenditWebhook entity.WebhookXenditPayment) (*entity.WebhookXenditPayment, error)
+	GetPaymentIdByInvoiceId(invoiceID string) (*entity.WebhookXenditPayment, error)
+	GetLastIDXendit() (*int, error)
+	UpdateStatusWebhookXenditPayment(xenditWebhook entity.WebhookXenditPayment) (*entity.WebhookXenditPayment, error)
 }
 
 type userRepository struct{
@@ -97,4 +101,50 @@ func (r *userRepository) GetUserByEmailAndToken(email, token string) (*entity.Us
 	}
 
 	return &user, nil
+}
+
+func (r *userRepository) GetLastIDXendit() (*int, error){
+	// Query the next value of the sequence
+	var nextID int
+	query := "SELECT nextval(pg_get_serial_sequence('webhook_xendit_payments', 'id'))"
+	if err := r.db.Raw(query).Scan(&nextID).Error; err != nil {
+		return nil, err
+	}
+
+	return &nextID, nil
+}
+
+func (r *userRepository) CreateXenditHistory(xenditWebhook entity.WebhookXenditPayment) (*entity.WebhookXenditPayment, error){
+	// Menyimpan data mahasiswa ke database menggunakan GORM.
+	if err := r.db.Create(&xenditWebhook).Error; err != nil {
+		return nil, err
+	}
+
+	return &xenditWebhook, nil
+}
+
+func (r *userRepository) GetPaymentIdByInvoiceId(invoiceID string) (*entity.WebhookXenditPayment, error) {
+	var xenditWebhook entity.WebhookXenditPayment
+	if err := r.db.Where("invoice_id = ?", invoiceID).First(&xenditWebhook).Error; err != nil{
+		return nil, err
+	}
+
+	return &xenditWebhook, nil
+}
+
+func (r *userRepository) UpdateStatusWebhookXenditPayment(xenditWebhook entity.WebhookXenditPayment) (*entity.WebhookXenditPayment, error){
+	if err := r.db.Model(&entity.WebhookXenditPayment{}).
+		Where("id = ?", xenditWebhook.ID).
+		Update("status", gorm.Expr("'PAID'")).Error; err != nil {
+		return nil, err
+	}
+
+	// Retrieve the updated user
+	var updatedPayment entity.WebhookXenditPayment
+
+	if err := r.db.Where("id = ?", xenditWebhook.ID).First(&updatedPayment).Error; err != nil {
+		return nil, err
+	}
+
+	return &updatedPayment, nil
 }

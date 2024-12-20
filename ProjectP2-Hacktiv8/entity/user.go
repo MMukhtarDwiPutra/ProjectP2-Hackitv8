@@ -39,3 +39,19 @@ type BalanceResponse struct{
 	FullName string `json:"full_name"`
 	Balance float32 `json:"balance"`
 }
+
+type TopUpResponse struct {
+	InvoiceID    string  `json:"invoice_id"`
+	Status       string  `json:"status"`
+	Description  string  `json:"description"`
+	Url          string  `json:"url"`
+	MerchantName string  `json:"merchant_name"`
+	ExternalID string `json:"external_id"`
+}
+
+type WebhookXenditPayment struct {
+	ID          int    `json:"id" gorm:"primaryKey"`
+	InvoiceID string   `json:"invoice_id" gorm:"not null"`
+	UserIDApp   int    `json:"user_id_app" gorm:"not null"`
+	Status      string `json:"status" gorm:"not null"`
+}

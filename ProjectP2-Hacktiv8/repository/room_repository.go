@@ -8,6 +8,7 @@ import(
 type RoomRepository interface{
 	GetAllRooms() (*[]entity.Room, error)
 	GetRoomById(id int) (*entity.Room, error)
+	UpdateRoomAvailability(roomID int, avail string) (*entity.Room, error)
 }
 
 type roomRepository struct{
@@ -34,4 +35,22 @@ func (r *roomRepository) GetRoomById(id int) (*entity.Room, error){
 	}
 
 	return &room, nil
+}
+
+func (r *roomRepository) UpdateRoomAvailability(roomID int, avail string) (*entity.Room, error){
+	// Increment the balance
+	if err := r.db.Model(&entity.Room{}).
+		Where("room_id = ?", roomID).
+		Update("availability_status", gorm.Expr("?", avail)).Error; err != nil {
+		return nil, err
+	}
+
+	// Retrieve the updated user
+	var updatedRoom entity.Room
+
+	if err := r.db.Where("room_id = ?", roomID).First(&updatedRoom).Error; err != nil {
+		return nil, err
+	}
+
+	return &updatedRoom, nil
 }

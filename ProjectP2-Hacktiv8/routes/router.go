@@ -44,7 +44,7 @@ func NewRouter(db *gorm.DB) *echo.Echo {
 
 	// Route user
 	e.GET("/confirm", userController.ConfirmHandler)
-	e.GET("/payments", saldoController.GetAllPaymentsMethod)
+	e.POST("/invoice_webhook_url", saldoController.InvoiceWebhookHandler)
 
 	e.POST("/users/register", userController.RegisterUser)
 	e.POST("/users/login", userController.LoginUser, internal.CheckUserActivationByEmail(userRepository))

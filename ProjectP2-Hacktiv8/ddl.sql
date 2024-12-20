@@ -39,6 +39,13 @@ CREATE TABLE rents (
     FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE CASCADE
 );
 
+CREATE TABLE webhook_xendit_payments(
+    id SERIAL PRIMARY KEY,
+    invoice_id VARCHAR(255) NOT NULL,
+    user_id_app INT NOT NULL,
+    status VARCHAR(20) NOT NULL
+)
+
 -- INSERT INTO users (full_name, email, password, balance) 
 -- VALUES 
 -- ('Muhammad Mukhtar Dwi Putra', 'putra16.mp@gmail.com', '$2a$10$m8NCL7NYth/H65qPH3l0feu3pQ.ww8YGjxo3HbCXwLGokSgd/bB9G', 0.00);

@@ -57,6 +57,22 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 		}
 	}
 
+	fmt.Println(room)
+	if (room.AvailabilityStatus != "Available") {
+		return http.StatusConflict, map[string]interface{}{
+		    "status":  http.StatusConflict,
+		    "message": "The room is not available because it has already been booked.",
+		}
+	}
+
+	_, err = c.roomRepository.UpdateRoomAvailability(bookingRequest.RoomID, "Booked")
+	if err != nil {
+		return http.StatusInternalServerError, map[string]interface{}{
+			"status":  http.StatusInternalServerError,
+			"message": fmt.Sprintf("Booking update status failed: %v", err),
+		}
+	}
+
 	// Attempt to retrieve the user
 	user, err := c.userRepository.GetUserById(bookingRequest.UserID)
 	

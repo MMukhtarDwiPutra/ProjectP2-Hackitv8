@@ -6,13 +6,8 @@ import (
 	"github.com/labstack/echo/v4"            // Import Echo framework untuk pengelolaan HTTP API.
 	"net/http"
 	"fmt"
-	// "time"
-	// balance_and_transaction "github.com/xendit/xendit-go/v4/balance_and_transaction"
 	"os"
 	"encoding/json"
-	"encoding/base64"
-	// "io"
-	// "bytes"
 )
 
 // saldoController is the controller for saldo-related operations.
@@ -75,94 +70,25 @@ func (h *saldoController) TopUp(c echo.Context) error {
 	return c.JSON(status, webResponse)
 }
 
-// GetAllPaymentsMethod retrieves all payment methods from Xendit API.
-func (h *saldoController) GetAllPaymentsMethod(c echo.Context) error {
-	xenditAPIKey := os.Getenv("3RD_PARTY_XENDIT_API")
-	if xenditAPIKey == "" {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"status":  http.StatusInternalServerError,
-			"message": "Xendit API key is not set in environment variables",
-		})
+func (h *saldoController) InvoiceWebhookHandler(c echo.Context) error {
+	// Get the x-callback-token from the header
+	callbackToken := c.Request().Header.Get("x-callback-token")
+	expectedToken := os.Getenv("XENDIT_WEBHOOK_KEY") // Set this in your environment
+
+	// Validate the callback token
+	if callbackToken != expectedToken {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid callback token")
 	}
 
-	// authHeader := "Basic " + base64.StdEncoding.EncodeToString([]byte(xenditAPIKey+":"))
-	url := "https://api.xendit.co/v2/payment_methods"
-
-	// req, err := http.NewRequest("GET", url, nil)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-	// 		"status":  http.StatusInternalServerError,
-	// 		"message": fmt.Sprintf("Failed to create request: %v", err),
-	// 	})
-	// }
-	// req.Header.Add("Authorization", authHeader)
-
-	// client := &http.Client{}
-	// resp, err := client.Do(req)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-	// 		"status":  http.StatusInternalServerError,
-	// 		"message": fmt.Sprintf("Failed to make API request: %v", err),
-	// 	})
-	// }
-	// defer resp.Body.Close()
-
-	// // Debugging
-	// fmt.Println("HTTP Status Code:", resp.StatusCode)
-	// body, _ := io.ReadAll(resp.Body)
-	// fmt.Println("Response Body:", string(body))
-
-	// if resp.StatusCode != http.StatusOK {
-	// 	return c.JSON(resp.StatusCode, map[string]interface{}{
-	// 		"status":  resp.StatusCode,
-	// 		"message": "Failed to fetch payment methods",
-	// 	})
-	// }
-
-	client := &http.Client{}
-	request, err := http.NewRequest("GET", url, nil)
+	// Parse the JSON body into the InvoiceWebhook struct
+	var webhookPayload entity.WebhookPayload
+	err := json.NewDecoder(c.Request().Body).Decode(&webhookPayload)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"status":  http.StatusInternalServerError,
-			"message": fmt.Sprintf("Failed to get request from API: %v", err),
-		})
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse JSON")
 	}
 
-	apiKey := "Basic "+base64.StdEncoding.EncodeToString([]byte(xenditAPIKey+":"))
-	request.SetBasicAuth(apiKey, "")
-	request.Header.Set("Content-Type", "application/json")
+	status := h.saldoService.CallbackWebhook(webhookPayload)
 
-	response, err := client.Do(request)
-	if err != nil {
-	 	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"status":  http.StatusInternalServerError,
-			"message": fmt.Sprintf("Failed to get the API response: %v", err),
-		})
-	}
-
-	defer response.Body.Close()
-
-	var paymentResponse entity.PaymentMethodsResponse
-	if err := json.NewDecoder(response.Body).Decode(&paymentResponse); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"status":  http.StatusInternalServerError,
-			"message": fmt.Sprintf("Failed to decode API response: %v", err),
-		})
-	}
-
-	// var paymentResponse []entity.PaymentMethodsResponse
-	// err = json.Unmarshal(body, &paymentResponse)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-	// 		"status":  http.StatusInternalServerError,
-	// 		"message": fmt.Sprintf("Failed to decode API response: %v", err),
-	// 	})
-	// }
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"status":  http.StatusOK,
-		"message": "Successfully retrieved payment methods",
-		"data":    paymentResponse,
-	})
-	
+	// Respond with HTTP 200 status
+	return c.NoContent(status)
 }
