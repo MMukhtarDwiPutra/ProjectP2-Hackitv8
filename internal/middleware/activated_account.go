@@ -2,12 +2,14 @@ package middleware
 
 import (
 	"P2-Hacktiv8/repository"
+	"P2-Hacktiv8/entity"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"encoding/json"
 	"io/ioutil"
 	"bytes"
+	"gorm.io/gorm"
 )
 
 func CheckUserActivationByEmail(userRepo repository.UserRepository) echo.MiddlewareFunc {
@@ -16,20 +18,24 @@ func CheckUserActivationByEmail(userRepo repository.UserRepository) echo.Middlew
 			body, _ := ioutil.ReadAll(c.Request().Body)
             c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-            type Request struct {
-                Email string `json:"email"`
-            }
-            var req Request
-            if err := json.Unmarshal(body, &req); err != nil || req.Email == "" {
-                return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid email in request"})
+            var req entity.LoginRequest
+            if err := json.Unmarshal(body, &req); err != nil || req.Email == "" || req.Password == ""{
+                return c.JSON(http.StatusBadRequest, map[string]interface{}{"status": http.StatusBadRequest, "message": "invalid email or password in request"})
             }
 
 			// Fetch the user from the repository by email.
 			user, err := userRepo.GetUserByEmail(req.Email)
 			if err != nil {
+				if err == gorm.ErrRecordNotFound{
+					return c.JSON(http.StatusNotFound, map[string]interface{}{
+						"status":  http.StatusNotFound,
+						"message": "Email or password is incorrect!",
+					})
+				}
+
 				return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 					"status":  http.StatusInternalServerError,
-					"message": "Failed to fetch user",
+					"message": "Error query",
 				})
 			}
 

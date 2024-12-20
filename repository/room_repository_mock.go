@@ -37,3 +37,11 @@ func (m *RoomRepositoryMock) GetRoomById(id int) (*entity.Room, error) {
     return room, nil
 }
 
+func (m *RoomRepositoryMock) UpdateRoomAvailability(roomID int, avail string) (*entity.Room, error) {
+	args := m.Mock.Called(roomID, avail)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.Room), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+

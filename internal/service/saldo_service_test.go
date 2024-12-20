@@ -2,55 +2,101 @@ package service
 
 import (
 	"P2-Hacktiv8/entity"
+	"P2-Hacktiv8/utils"
 	"net/http"
 	"testing"
 	"github.com/stretchr/testify/assert"
-	"fmt"
+	"gorm.io/gorm"
+	"bou.ke/monkey"
 )
 
 var testSaldoService = NewSaldoService(userRepoMock)
 
-// func TestTopUp_Success(t *testing.T) {
-//     topUpRequest := entity.BalanceRequest{
-//         UserID:  1,
-//         Balance: 1000,  // Top-up amount
-//     }
+func TestTopUp_Success(t *testing.T) {
+	monkey.Patch(utils.SendEmailNotification, func(to, subject, content string) {
+		// Mock behavior: Do nothing or log the invocation
+	})
+	defer monkey.Unpatch(utils.SendEmailNotification) // Unpatch after the test
 
-//     mockUser := &entity.User{
-//         UserID:  1,
-//         Balance: 5000,  // Initial balance
-//     }
+    // Arrange
+    userID := 1
+    topUpAmount := 1000
+    initialBalance := 5000
 
-//     // The balance after top-up should be 6000
-//     expectedBalanceResponse := &entity.BalanceResponse{
-//         UserID:  1,
-//         Balance: 6000,  // Updated balance
-//     }
+    topUpRequest := entity.BalanceRequest{
+        UserID:  userID,
+        Balance: float32(topUpAmount),
+    }
 
-//     // Setup mocks
-//     userRepoMock.Mock.On("GetUserById", topUpRequest.UserID).Return(mockUser, nil).Once()
+    mockUser := &entity.User{
+	    UserID:  userID,
+	    Balance: float32(initialBalance),
+	    Email:   "testing@gmail.com", // Ensure this is set correctly
+	}
 
-//     // Ensure UpdateBalance is called with topUpRequest, but we expect a BalanceRequest object here
-//     userRepoMock.Mock.On("UpdateBalance", topUpRequest).Return(expectedBalanceResponse, nil).Once()
+    // Mocking the GetLastIDXendit method to return a valid invoice ID
+    mockInvoiceID := 1234
+    userRepoMock.Mock.On("GetLastIDXendit").Return(&mockInvoiceID, nil).Once()
 
-//     // Call the method under test
-//     status, response := testSaldoService.TopUp(topUpRequest)
+    // Create a mock behavior for CreateInvoice using monkey patch
+    monkey.Patch(utils.CreateInvoice, func(mockUser entity.User, topUpRequest entity.BalanceRequest, externalID string) (*entity.InvoiceResponse, error) {
+        return &entity.InvoiceResponse{
+            ID:          externalID,
+            Status:      "Success",
+            Description: "Top Up Invoice",
+            InvoiceURL:  "http://example.com/invoice/" + externalID,
+            MerchantName: "Sample Merchant",
+            ExternalID:  externalID,
+        }, nil
+    })
+    // Ensure to unpatch the method after the test
+    defer monkey.Unpatch(utils.CreateInvoice)
 
-//     // Check that the response status and message are as expected
-//     assert.Equal(t, http.StatusOK, status)
-//     assert.Equal(t, "Successfully top up balance", response["message"])
+    // Set up other mocks
+    userRepoMock.Mock.On("GetUserById", userID).Return(mockUser, nil).Once()
 
-//     // Check that the returned data matches the expected balance response
-//     actualBalanceResponse := response["data"].(*entity.BalanceResponse)
-//     assert.Equal(t, expectedBalanceResponse.UserID, actualBalanceResponse.UserID)
-//     assert.Equal(t, expectedBalanceResponse.Balance, actualBalanceResponse.Balance)
+    // Correct mock setup:
+	mockXenditPayment := entity.WebhookXenditPayment{
+	    InvoiceID: "INV1234",
+	    UserIDApp: 1,
+	    Status:    "Success",
+	}
 
-//     // Optionally, print the response for debugging
-//     fmt.Printf("Returned balance response: %+v\n", actualBalanceResponse)
+	userRepoMock.Mock.On("CreateXenditHistory", mockXenditPayment).Return(&mockXenditPayment, nil).Once()
 
-//     // Verify that the mocks were called as expected
-//     userRepoMock.Mock.AssertExpectations(t)
-// }
+    // Create the service with the mocked dependencies
+    testSaldoService := NewSaldoService(userRepoMock)
+
+    // Act
+    status, response := testSaldoService.TopUp(topUpRequest)
+
+    // Assert
+    assert.Equal(t, http.StatusOK, status)
+    assert.Equal(t, "Successfully top up balance", response["message"])
+
+    actualResponse, ok := response["data"].(entity.TopUpResponse)
+
+    expectedResponse := entity.TopUpResponse{
+    	InvoiceID: "INV1234",
+    	Status: "Success",
+    	Description: "Top Up Invoice",
+    	Url:  "http://example.com/invoice/INV1234",
+        MerchantName: "Sample Merchant",
+        ExternalID:  "INV1234",
+
+    }
+
+    assert.True(t, ok)
+	assert.Equal(t, expectedResponse.InvoiceID, actualResponse.InvoiceID)
+	assert.Equal(t, expectedResponse.Status, actualResponse.Status)
+	assert.Equal(t, expectedResponse.Description, actualResponse.Description)
+	assert.Equal(t, expectedResponse.Url, actualResponse.Url)
+	assert.Equal(t, expectedResponse.MerchantName, actualResponse.MerchantName)
+	assert.Equal(t, expectedResponse.ExternalID, actualResponse.ExternalID)
+
+    // Verify mock expectations
+    userRepoMock.Mock.AssertExpectations(t)
+}
 
 func TestTopUp_Error_GetUserById(t *testing.T) {
 	// Prepare the mock request
@@ -60,14 +106,14 @@ func TestTopUp_Error_GetUserById(t *testing.T) {
 	}
 
 	// Mock an error for GetUserById
-	userRepoMock.Mock.On("GetUserById", topUpRequest.UserID).Return(nil, fmt.Errorf("User not found")).Once()
+	userRepoMock.Mock.On("GetUserById", topUpRequest.UserID).Return(nil, gorm.ErrRecordNotFound).Once()
 
 	// Call the service method
 	status, response := testSaldoService.TopUp(topUpRequest)
 
 	// Assertions
-	assert.Equal(t, http.StatusInternalServerError, status)
-	assert.Equal(t, "Top up fail in database: User not found", response["message"])
+	assert.Equal(t, http.StatusNotFound, status)
+	assert.Equal(t, "User not found", response["message"])
 }
 
 // func TestTopUp_Error_UpdateBalance(t *testing.T) {

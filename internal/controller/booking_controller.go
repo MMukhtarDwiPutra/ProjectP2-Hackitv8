@@ -30,6 +30,9 @@ func NewBookingController(bookingService service.BookingService) *bookingControl
 // @Failure 404 {object} map[string]interface{} "Room or User not found"
 // @Failure 402 {object} map[string]interface{} "Insufficient balance"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer Token (Example: 'Bearer <your_token>')"
 // @Router /booking [post]
 func (h *bookingController) BookARoom(c echo.Context) error {
 	var bookingRequest entity.BookingRequest
@@ -75,6 +78,9 @@ func (h *bookingController) BookARoom(c echo.Context) error {
 // @Success 200 {object} map[string]interface{} "Booking report retrieved successfully"
 // @Failure 401 {object} map[string]interface{} "User not authorized"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer Token (Example: 'Bearer <your_token>')"
 // @Router /booking/report [get]
 func (h *bookingController) BookingReport(c echo.Context) error {
 	userID, ok := c.Get("user_id").(int)

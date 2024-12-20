@@ -56,7 +56,7 @@ INSERT INTO public.rooms VALUES (9, 1200.00, 'Standard', 'Available');
 INSERT INTO public.rooms VALUES (10, 1500.00, 'Deluxe', 'Available');
 INSERT INTO public.rooms VALUES (11, 2000.00, 'Suite', 'Available');
 INSERT INTO public.rooms VALUES (12, 2500.00, 'Excecutive Suite', 'Available');
-INSERT INTO public.rooms VALUES (1, 1200.00, 'Standard', 'Booked');
+INSERT INTO public.rooms VALUES (1, 1200.00, 'Standard', 'Available');
 
 INSERT INTO public.users VALUES (6, 'Muhammad Mukhtar Dwi Putra', 'screedmp@gmail.com', '$2a$10$XofwmXQWi79QG5DTWuTXgOtHbJn8mXnYZ0ueJIjNf7WqlgmQF80D.', 0.00, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNjcmVlZG1wQGdtYWlsLmNvbSIsImV4cCI6MTczNDg4ODIzMn0.O4ioCo_rKcjAUJGNiS5ZPr8fAQDPl115HkXiTyuH1Rg', 'Activated');
 INSERT INTO public.users VALUES (4, 'Muhammad Mukhtar Dwi Putra', 'putra16.mp@gmail.com', '$2a$10$0gtyZC87Qv.uCgEjX5Q9B.P.H7t.l8ZOp2g2t1G57ze6COsopSH26', 28600.00, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InB1dHJhMTYubXBAZ21haWwuY29tIiwiZXhwIjoxNzM0ODQxNDI1fQ.N0KV7iw1kWrI1Bg_JapR5yH9sAtvc8epobStvh51Lw4', 'Activated');

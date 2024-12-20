@@ -35,6 +35,7 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 				"message": "User not found",
 			}
 		}
+
 		// Handle internal server error for other errors
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status":  http.StatusInternalServerError,
@@ -54,7 +55,7 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 	if err != nil {
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status":  http.StatusInternalServerError,
-			"message": fmt.Sprintf("Error convert int", err),
+			"message": "Error convert int",
 		}
 	}
 
@@ -62,6 +63,7 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 
 	invoice, err := utils.CreateInvoice(*findUser, topUpRequest, invoiceString)
 	if err != nil {
+		fmt.Println()
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status":  http.StatusInternalServerError,
 			"message": fmt.Sprintf("Top up fail in database: %v", err),
@@ -74,7 +76,7 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 		Status:invoice.Status,
 	}
 
-	_, err = s.userRepository.CreateXenditHistory(xenditPayment)
+	xenditHistory, err := s.userRepository.CreateXenditHistory(xenditPayment)
 	if err != nil {
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status":  http.StatusInternalServerError,
@@ -88,7 +90,7 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 		Description:  invoice.Description,
 		Url:          invoice.InvoiceURL,
 		MerchantName: invoice.MerchantName,
-		ExternalID:   invoice.ExternalID,
+		ExternalID:   xenditHistory.InvoiceID,
 	}
 
 	// Send email notification

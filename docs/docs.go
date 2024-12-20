@@ -17,6 +17,14 @@ const docTemplate = `{
     "paths": {
         "/booking": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Books a room for a user, requiring down payment based on the room price and user's balance.",
                 "consumes": [
                     "application/json"
@@ -37,6 +45,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/entity.BookingRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer Token (Example: 'Bearer \u003cyour_token\u003e')",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -80,6 +95,14 @@ const docTemplate = `{
         },
         "/booking/report": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves all bookings made by a specific user.",
                 "produces": [
                     "application/json"
@@ -88,6 +111,15 @@ const docTemplate = `{
                     "Booking"
                 ],
                 "summary": "Get booking report for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Token (Example: 'Bearer \u003cyour_token\u003e')",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Booking report retrieved successfully",
@@ -170,6 +202,83 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice_webhook_url": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Processes the webhook sent by Xendit for invoice updates (e.g., PAID, EXPIRED).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Webhook"
+                ],
+                "summary": "Handles Invoice Webhook from Xendit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Xendit Callback Token",
+                        "name": "x-callback-token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Webhook Payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.WebhookPayload"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer Token (Example: 'Bearer \u003cyour_token\u003e')",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Failed to parse JSON",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid callback token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -330,6 +439,14 @@ const docTemplate = `{
         },
         "/top-up": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Top up the balance of a user by providing a ` + "`" + `BalanceRequest` + "`" + ` object which includes the amount to be added to the balance.",
                 "consumes": [
                     "application/json"
@@ -350,6 +467,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/entity.BalanceRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer Token (Example: 'Bearer \u003cyour_token\u003e')",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -386,6 +510,14 @@ const docTemplate = `{
         },
         "/user-info": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves user information such as email, full name, and balance by user ID.",
                 "consumes": [
                     "application/json"
@@ -397,6 +529,15 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Get user information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Token (Example: 'Bearer \u003cyour_token\u003e')",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "User information retrieved successfully",
@@ -420,68 +561,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/webhook/invoice": {
-            "post": {
-                "description": "Processes the webhook sent by Xendit for invoice updates (e.g., PAID, EXPIRED).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Webhook"
-                ],
-                "summary": "Handles Invoice Webhook from Xendit",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Xendit Callback Token",
-                        "name": "x-callback-token",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Webhook Payload",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entity.WebhookPayload"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request - Failed to parse JSON",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Invalid callback token",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true

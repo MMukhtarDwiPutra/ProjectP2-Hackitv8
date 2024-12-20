@@ -2,76 +2,105 @@ package repository
 
 import (
 	"P2-Hacktiv8/entity"
+	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 type UserRepositoryMock struct {
-	Mock mock.Mock
+	mock.Mock
 }
 
 func (m *UserRepositoryMock) CreateUser(user entity.User) (*entity.User, error) {
-	res := m.Mock.Called(user)
-
-	if res.Get(0) == nil {
-		return nil, res.Error(1)
+	args := m.Called(user)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.User), args.Error(1)
 	}
-
-	createdUser := res.Get(0).(*entity.User)
-	return createdUser, res.Error(1)
+	return nil, args.Error(1)
 }
 
 func (m *UserRepositoryMock) GetUserByEmail(email string) (*entity.User, error) {
-	res := m.Mock.Called(email)
-
-	if res.Get(0) == nil {
-		return nil, res.Error(1)
+	args := m.Called(email)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.User), args.Error(1)
 	}
-
-	user := res.Get(0).(*entity.User)
-	return user, res.Error(1)
+	return nil, args.Error(1)
 }
 
 func (m *UserRepositoryMock) GetUserById(id int) (*entity.User, error) {
-	res := m.Mock.Called(id)
-
-	if res.Get(0) == nil {
-		return nil, res.Error(1)
+	args := m.Called(id)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.User), args.Error(1)
 	}
-
-	user := res.Get(0).(*entity.User)
-	return user, res.Error(1)
+	return nil, args.Error(1)
 }
 
 func (m *UserRepositoryMock) UpdateBalance(user entity.BalanceRequest) (*entity.BalanceResponse, error) {
-	res := m.Mock.Called(user)
-
-	if res.Get(0) == nil {
-		return nil, res.Error(1)
+	args := m.Called(user)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.BalanceResponse), args.Error(1)
 	}
-
-	balanceResp := res.Get(0).(*entity.BalanceResponse)
-	return balanceResp, res.Error(1)
+	return nil, args.Error(1)
 }
 
 func (m *UserRepositoryMock) UpdateIsActivatedById(id int, isActivated string) (*entity.User, error) {
-	res := m.Mock.Called(id, isActivated)
-
-	if res.Get(0) == nil {
-		return nil, res.Error(1)
+	args := m.Called(id, isActivated)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.User), args.Error(1)
 	}
-
-	user := res.Get(0).(*entity.User)
-	return user, res.Error(1)
+	return nil, args.Error(1)
 }
 
 func (m *UserRepositoryMock) GetUserByEmailAndToken(email, token string) (*entity.User, error) {
-	res := m.Mock.Called(email, token)
-
-	if res.Get(0) == nil {
-		return nil, res.Error(1)
+	args := m.Called(email, token)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.User), args.Error(1)
 	}
+	return nil, args.Error(1)
+}
 
-	user := res.Get(0).(*entity.User)
-	return user, res.Error(1)
+func (m *UserRepositoryMock) CreateXenditHistory(xenditWebhook entity.WebhookXenditPayment) (*entity.WebhookXenditPayment, error) {
+	args := m.Called(xenditWebhook)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.WebhookXenditPayment), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *UserRepositoryMock) GetPaymentIdByInvoiceId(invoiceID string) (*entity.WebhookXenditPayment, error) {
+	args := m.Called(invoiceID)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.WebhookXenditPayment), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *UserRepositoryMock) GetLastIDXendit() (*int, error) {
+	args := m.Called()
+	if args.Get(0) != nil {
+		return args.Get(0).(*int), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *UserRepositoryMock) UpdateStatusWebhookXenditPayment(xenditWebhook entity.WebhookXenditPayment) (*entity.WebhookXenditPayment, error) {
+	args := m.Called(xenditWebhook)
+	if args.Get(0) != nil {
+		return args.Get(0).(*entity.WebhookXenditPayment), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func TestUserRepositoryMock(t *testing.T) {
+	mockRepo := new(UserRepositoryMock)
+
+	// Example: Mocking CreateUser
+	user := entity.User{UserID: 1, Email: "test@example.com"}
+	mockRepo.On("CreateUser", user).Return(&user, nil)
+
+	createdUser, err := mockRepo.CreateUser(user)
+	assert.NoError(t, err)
+	assert.Equal(t, user, *createdUser)
+	mockRepo.AssertExpectations(t)
 }

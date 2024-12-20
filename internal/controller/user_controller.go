@@ -77,7 +77,6 @@ func (h *userController) LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid request parameters"})
 	}
 
-
 	// Memvalidasi data request menggunakan validator.
 	err := validate.Struct(loginRequest)
 	if err != nil {
@@ -102,6 +101,9 @@ func (h *userController) LoginUser(c echo.Context) error {
 // @Failure 401 {object} map[string]interface{} "Unauthorized - User not authenticated"
 // @Failure 404 {object} map[string]interface{} "User not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer Token (Example: 'Bearer <your_token>')"
 // @Router /user-info [get]
 func (h *userController) UserInfo(c echo.Context) error {
 	userID, ok := c.Get("user_id").(int)

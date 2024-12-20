@@ -31,6 +31,9 @@ func NewSaldoController(saldoService service.SaldoService) *saldoController {
 // @Failure 400 {object} map[string]interface{} "Invalid request parameters"
 // @Failure 401 {object} map[string]interface{} "Unauthorized - Invalid user ID"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security ApiKeyAuth
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer Token (Example: 'Bearer <your_token>')"
 // @Router /top-up [post]
 func (h *saldoController) TopUp(c echo.Context) error {
 	var topUpRequest entity.BalanceRequest
@@ -78,11 +81,14 @@ func (h *saldoController) TopUp(c echo.Context) error {
 // @Produce      json
 // @Param        x-callback-token  header    string  true  "Xendit Callback Token"
 // @Param        body              body      entity.WebhookPayload  true  "Webhook Payload"
-// @Success      204              {string}  string  "No Content"
-// @Failure      400              {object}  map[string]interface{}  "Bad Request - Failed to parse JSON"
-// @Failure      401              {object}  map[string]interface{}  "Unauthorized - Invalid callback token"
-// @Failure      500              {object}  map[string]interface{}  "Internal Server Error"
-// @Router       /webhook/invoice [post]
+// @Success      204               {string}  string  "No Content"
+// @Failure      400               {object}  map[string]interface{}  "Bad Request - Failed to parse JSON"
+// @Failure      401               {object}  map[string]interface{}  "Unauthorized - Invalid callback token"
+// @Failure      500               {object}  map[string]interface{}  "Internal Server Error"
+// @Security     ApiKeyAuth
+// @Security     BearerAuth
+// @Param        Authorization header string true "Bearer Token (Example: 'Bearer <your_token>')"
+// @Router       /invoice_webhook_url [post]
 func (h *saldoController) InvoiceWebhookHandler(c echo.Context) error {
 	// Get the x-callback-token from the header
 	callbackToken := c.Request().Header.Get("x-callback-token")

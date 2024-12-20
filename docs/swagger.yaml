@@ -119,6 +119,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entity.BookingRequest'
+      - description: 'Bearer Token (Example: ''Bearer <your_token>'')'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -147,12 +152,21 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Book a room
       tags:
       - Booking
   /booking/report:
     get:
       description: Retrieves all bookings made by a specific user.
+      parameters:
+      - description: 'Bearer Token (Example: ''Bearer <your_token>'')'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -171,6 +185,9 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Get booking report for a user
       tags:
       - Booking
@@ -216,6 +233,57 @@ paths:
       summary: Confirm user account activation
       tags:
       - User
+  /invoice_webhook_url:
+    post:
+      consumes:
+      - application/json
+      description: Processes the webhook sent by Xendit for invoice updates (e.g.,
+        PAID, EXPIRED).
+      parameters:
+      - description: Xendit Callback Token
+        in: header
+        name: x-callback-token
+        required: true
+        type: string
+      - description: Webhook Payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.WebhookPayload'
+      - description: 'Bearer Token (Example: ''Bearer <your_token>'')'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request - Failed to parse JSON
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - Invalid callback token
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Handles Invoice Webhook from Xendit
+      tags:
+      - Webhook
   /login:
     post:
       consumes:
@@ -331,6 +399,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entity.BalanceRequest'
+      - description: 'Bearer Token (Example: ''Bearer <your_token>'')'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -354,6 +427,9 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Top up user balance
       tags:
       - Saldo
@@ -363,6 +439,12 @@ paths:
       - application/json
       description: Retrieves user information such as email, full name, and balance
         by user ID.
+      parameters:
+      - description: 'Bearer Token (Example: ''Bearer <your_token>'')'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -385,50 +467,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Get user information
       tags:
       - User
-  /webhook/invoice:
-    post:
-      consumes:
-      - application/json
-      description: Processes the webhook sent by Xendit for invoice updates (e.g.,
-        PAID, EXPIRED).
-      parameters:
-      - description: Xendit Callback Token
-        in: header
-        name: x-callback-token
-        required: true
-        type: string
-      - description: Webhook Payload
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/entity.WebhookPayload'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-          schema:
-            type: string
-        "400":
-          description: Bad Request - Failed to parse JSON
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized - Invalid callback token
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Handles Invoice Webhook from Xendit
-      tags:
-      - Webhook
 swagger: "2.0"

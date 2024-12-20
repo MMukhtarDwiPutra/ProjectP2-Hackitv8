@@ -104,9 +104,12 @@ func (s *userService) LoginUser(request entity.LoginRequest) (int, map[string]in
 		return http.StatusNotFound, map[string]interface{}{"message": "Invalid Email or Password"}
 	}
 	if err != nil {
+		if err != gorm.ErrRecordNotFound{
+			return http.StatusNotFound, map[string]interface{}{"message": "Invalid Email or Password"}
+		}
+
 		return http.StatusInternalServerError, map[string]interface{}{
-			"status": http.StatusInternalServerError,
-			"message": "error query get user by email",
+			"message": "Error querying the database.",
 		}
 	}
 
