@@ -70,6 +70,19 @@ func (h *saldoController) TopUp(c echo.Context) error {
 	return c.JSON(status, webResponse)
 }
 
+// InvoiceWebhookHandler handles the webhook callback from Xendit
+// @Summary      Handles Invoice Webhook from Xendit
+// @Description  Processes the webhook sent by Xendit for invoice updates (e.g., PAID, EXPIRED).
+// @Tags         Webhook
+// @Accept       json
+// @Produce      json
+// @Param        x-callback-token  header    string  true  "Xendit Callback Token"
+// @Param        body              body      entity.WebhookPayload  true  "Webhook Payload"
+// @Success      204              {string}  string  "No Content"
+// @Failure      400              {object}  map[string]interface{}  "Bad Request - Failed to parse JSON"
+// @Failure      401              {object}  map[string]interface{}  "Unauthorized - Invalid callback token"
+// @Failure      500              {object}  map[string]interface{}  "Internal Server Error"
+// @Router       /webhook/invoice [post]
 func (h *saldoController) InvoiceWebhookHandler(c echo.Context) error {
 	// Get the x-callback-token from the header
 	callbackToken := c.Request().Header.Get("x-callback-token")

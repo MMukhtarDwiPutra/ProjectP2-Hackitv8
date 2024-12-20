@@ -5,7 +5,7 @@ import(
 	internal "P2-Hacktiv8/internal/middleware"
 	"P2-Hacktiv8/internal/service"
 	"P2-Hacktiv8/repository"
-	// _ "P2-Hacktiv8/docs" // Import the generated Swagger docs
+	_ "P2-Hacktiv8/docs" // Import the generated Swagger docs
 
 	"gorm.io/gorm"
 	"github.com/labstack/echo/v4"

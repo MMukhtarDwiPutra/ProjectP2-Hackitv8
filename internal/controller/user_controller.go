@@ -28,7 +28,7 @@ func NewUserController(userService service.UserService) *userController {
 // @Accept json
 // @Produce json
 // @Param request body entity.RegisterRequest true "Register Request"
-// @Success 201 {object} entity.RegisterResponse "User successfully registered"
+// @Success 201 {object} entity.UserResponse "User successfully registered"
 // @Failure 400 {object} map[string]string "Invalid request parameters"
 // @Failure 409 {object} map[string]string "Email already registered"
 // @Failure 500 {object} map[string]string "Internal server error"

@@ -3,7 +3,7 @@ package main
 import(
 	"P2-Hacktiv8/config"
 	"P2-Hacktiv8/routes"
-	// _ "P2-Hacktiv8/docs" // Import the generated Swagger docs
+	_ "P2-Hacktiv8/docs" // Import the generated Swagger docs
 	"os"
 	"github.com/joho/godotenv"
 	"log"
