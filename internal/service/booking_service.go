@@ -105,6 +105,7 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 	}
 	bookingResp, err := c.bookingRepository.CreateBooking(booking)
 	if err != nil {
+		fmt.Println("tes")
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status":  http.StatusInternalServerError,
 			"message": fmt.Sprintf("Booking creation failed: %v", err),
@@ -136,14 +137,14 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 	Thank you for booking with us! Here are the details of your booking:
 
 	- Room ID: %v
-	- Price: $%.2f
+	- Price: Rp. %.2f
 	- Booking Date: %v
 
 	We hope you enjoy your stay. If you have any questions or need further assistance, feel free to contact us.
 
 	Best regards,
 	Your Booking Team
-	`, user.FullName, room.RoomID, room.Price, time.Now().Format("January 2, 2006, 3:04 PM"))
+	`, user.FullName, room.RoomID, (room.Price * 1000), time.Now().Format("January 2, 2006, 3:04 PM"))
 
 	// Send the email
 	utils.SendEmailNotification(to, subject, content)

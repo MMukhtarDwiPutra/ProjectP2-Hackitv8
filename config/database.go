@@ -19,13 +19,6 @@ func InitDatabase() *gorm.DB {
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 
-	// Konfigurasi untuk Supabase
-	// db_host := "aws-0-ap-southeast-1.pooler.supabase.com"
-	// db_user := "postgres.morsauyvkvtbwbgiyzvm"
-	// db_password := "SupabasePtr16"
-	// db_name := "postgres"
-	// db_port := "6543"
-
 	// Membuat DSN (Data Source Name) untuk koneksi ke PostgreSQL
 	// Format: "host=<host> user=<user> password=<password> dbname=<dbname> port=<port> sslmode=disable TimeZone=Asia/Shanghai"
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",

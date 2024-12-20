@@ -109,6 +109,7 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 	- Description: %s
 	- Payment Link: %s
 	- Merchant: %s
+	- Ammount: Rp. %v
 
 	Please save this email for your reference. If you have any questions or require assistance, feel free to reach out to us.
 
@@ -121,7 +122,8 @@ func (s *saldoService) TopUp(topUpRequest entity.BalanceRequest) (int, map[strin
 		topUpResponse.InvoiceID, 
 		topUpResponse.Description, 
 		topUpResponse.Url, 
-		invoice.MerchantName)
+		invoice.MerchantName,
+		(topUpRequest.Balance * 1000))
 
 	// Send the email
 	utils.SendEmailNotification(to, subject, content)
