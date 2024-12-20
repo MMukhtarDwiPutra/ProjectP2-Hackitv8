@@ -64,14 +64,6 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 		}
 	}
 
-	_, err = c.roomRepository.UpdateRoomAvailability(bookingRequest.RoomID, "Booked")
-	if err != nil {
-		return http.StatusInternalServerError, map[string]interface{}{
-			"status":  http.StatusInternalServerError,
-			"message": fmt.Sprintf("Booking update status failed: %v", err),
-		}
-	}
-
 	// Attempt to retrieve the user
 	user, err := c.userRepository.GetUserById(bookingRequest.UserID)
 	
@@ -109,6 +101,14 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 		return http.StatusInternalServerError, map[string]interface{}{
 			"status":  http.StatusInternalServerError,
 			"message": fmt.Sprintf("Booking creation failed: %v", err),
+		}
+	}
+
+	_, err = c.roomRepository.UpdateRoomAvailability(bookingRequest.RoomID, "Booked")
+	if err != nil {
+		return http.StatusInternalServerError, map[string]interface{}{
+			"status":  http.StatusInternalServerError,
+			"message": fmt.Sprintf("Booking update status failed: %v", err),
 		}
 	}
 	
