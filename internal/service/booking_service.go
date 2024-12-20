@@ -57,7 +57,6 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 		}
 	}
 
-	fmt.Println(room)
 	if (room.AvailabilityStatus != "Available") {
 		return http.StatusConflict, map[string]interface{}{
 		    "status":  http.StatusConflict,
@@ -90,6 +89,7 @@ func (c *bookingService) BookARoom(bookingRequest entity.BookingRequest) (int, m
 	}
 
 	if user.Balance < room.Price {
+		fmt.Println("tidak cukup")
 		return http.StatusPaymentRequired, map[string]interface{}{
 			"status":  http.StatusPaymentRequired,
 			"message": "Booking creation failed: insufficient balance.",
